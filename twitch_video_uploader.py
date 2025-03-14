@@ -9,9 +9,9 @@ load_dotenv()
 
 TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 TWITCH_CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
-TWITCH_USERNAME = "echoinshade"
+TWITCH_USERNAME = os.getenv("TWITCH_USERNAME")  # Теперь никнейм берётся из .env
 OUTPUT_DIR = "downloads"
-VIDEO_INFO_FILE = "last_video.json"  # Файл для передачи данных в Boosty
+VIDEO_INFO_FILE = "last_video.json"
 
 # Получаем OAuth токен для Twitch API
 def get_twitch_token():
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     user_id = get_user_id(token)
     
     if not user_id:
-        print("❌ Не удалось получить user_id. Проверьте данные!")
+        print(f"❌ Не удалось получить user_id для {TWITCH_USERNAME}. Проверьте данные!")
         exit()
 
     videos = get_videos(token, user_id)
@@ -94,4 +94,4 @@ if __name__ == "__main__":
     video_path = download_video(video_url, video_title)
     save_video_info(video_path, video_date)
 
-    print("✅ Видео скачано. Теперь запустите `boosty_uploader.py` для загрузки!")
+    print(f"✅ Видео скачано с канала {TWITCH_USERNAME}. Теперь запустите `boosty_uploader.py` для загрузки!")
