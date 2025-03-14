@@ -8,8 +8,12 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.edge.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from dotenv import load_dotenv
 
-VIDEO_INFO_FILE = "last_video.json"  # Файл с данными о видео
+# Загружаем настройки из .env
+load_dotenv()
+BOOSTY_USERNAME = os.getenv("BOOSTY_USERNAME", "echoinshade")  # Никнейм с Boosty
+VIDEO_INFO_FILE = "last_video.json"
 
 # Загружаем данные о видео
 def load_video_info():
@@ -20,17 +24,18 @@ def load_video_info():
     with open(VIDEO_INFO_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
-# Загрузка на Boosty
+# Загрузка видео на Boosty
 def upload_to_boosty(video_path, video_date):
     edge_options = Options()
-    edge_options.debugger_address = "localhost:9223"  # Используем отладочный браузер
+    edge_options.debugger_address = "localhost:9223"
     driver = webdriver.Edge(options=edge_options)
     wait = WebDriverWait(driver, 15)
-    
-    print("🌐 Открываем Boosty...")
-    driver.get("https://boosty.to/echoinshade/new-post")
 
-    print("⌛ Ожидание поля тегов...")
+    boosty_url = f"https://boosty.to/{BOOSTY_USERNAME}/new-post"
+    print(f"🌐 Открываем {boosty_url}...")
+    driver.get(boosty_url)
+
+    # Ожидание поля тегов
     tags_field = wait.until(EC.presence_of_element_located((By.XPATH, "//input[contains(@placeholder, 'теги')]")))
     tags_field.send_keys("стрим")
     tags_field.send_keys(Keys.RETURN)
@@ -39,25 +44,25 @@ def upload_to_boosty(video_path, video_date):
     tags_field.send_keys(date_tag)
     tags_field.send_keys(Keys.RETURN)
 
-    print("⌛ Ожидание поля заголовка...")
+    # Ожидание поля заголовка
     title_field = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Введите заголовок поста']")))
     title_field.send_keys(os.path.basename(video_path))
 
-    print("⌛ Нажимаем кнопку 'Видео'...")
+    # Ожидание кнопки "Видео"
     video_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[.//span[contains(text(), 'Видео')]]")))
     video_button.click()
-    time.sleep(2)  # Даем время на загрузку меню
+    time.sleep(2)
 
-    print("⌛ Ожидание кнопки 'Загрузить файлом'...")
+    # Ожидание кнопки "Загрузить файлом"
     upload_file_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Загрузить файлом')]")))
     upload_file_button.click()
 
-    print("⌛ Ожидание input для загрузки файла...")
+    # Загрузка файла
     file_input = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='file']")))
     file_input.send_keys(os.path.abspath(video_path))
-    time.sleep(10)  # Даем время для загрузки
+    time.sleep(10)
 
-    print("⌛ Ожидание кнопки 'Опубликовать'...")
+    # Нажатие "Опубликовать"
     publish_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Опубликовать')]")))
     publish_button.click()
 
